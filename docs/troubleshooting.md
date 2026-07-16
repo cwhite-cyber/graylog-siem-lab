@@ -2,6 +2,27 @@
 
 Real, reproducible errors encountered during this build only.
 
+\---
+
+### Host hardware failure - RAM fault interrupting Graylog server install
+
+**Date:** 2026-07-15
+**Phase:** Graylog server install
+
+**Symptom:**
+Host machine (ThinkPad T490) experienced a system-level crash during the Graylog server installation process. Diagnosed as a RAM fault, requiring emergency physical removal of the affected memory module.
+
+**Cause:**
+Hardware failure on the host machine, unrelated to any configuration or software issue in the lab itself. Not a reproducible software bug.
+
+**Fix:**
+Removed the faulty RAM module. Session ended; no in-VM recovery action was possible or necessary, since the fault was at the physical hardware layer below the VM.
+
+**Verification:**
+Confirmed no data loss on graylog01 - MongoDB and OpenSearch were both verified running and healthy immediately prior to the crash. Graylog server package installation status was unconfirmed at time of shutdown and needs to be re-verified (`dpkg -l | grep graylog-server`) at the start of the next session before proceeding.
+
+**Note:** This incident prompted evaluation of cloud-based alternatives (e.g. a cloud VPS) to reduce dependency on aging local hardware for ongoing lab work, given this is the second local hardware/infrastructure interruption this project has experienced (see also: pfSense VM disk corruption, pfsense-firewall-lab troubleshooting.md).
+
 ---
 
 ### VM disk media selector confusion / duplicate .vdi files
@@ -10,18 +31,18 @@ Real, reproducible errors encountered during this build only.
 **Phase:** VM creation
 
 **Symptom:**
-Created a 40GB virtual disk for graylog01, but VirtualBox's storage attach dialog showed a 25GB graylog01.vdi already present, plus a separate 40GB file that had been auto-renamed (graylog01_1.vhd) to avoid a naming collision.
+Created a 40GB virtual disk for graylog01, but VirtualBox's storage attach dialog showed a 25GB graylog01.vdi already present, plus a separate 40GB file that had been auto-renamed (graylog01\_1.vhd) to avoid a naming collision.
 
 **Cause:**
 The original disk creation attempt left a registered 25GB .vdi in VirtualBox's media registry. Creating a second disk at the correct 40GB size caused VirtualBox to auto-suffix the filename rather than overwrite, since the original was still registered.
 
 **Fix:**
-Attached the correct 40GB graylog01_1.vhd to the VM. Removed the orphaned 25GB graylog01.vdi via File > Tools > Virtual Media Manager, choosing to delete the file from disk (not just unregister it).
+Attached the correct 40GB graylog01\_1.vhd to the VM. Removed the orphaned 25GB graylog01.vdi via File > Tools > Virtual Media Manager, choosing to delete the file from disk (not just unregister it).
 
 **Verification:**
-Storage settings showed a single 40GB disk attached, virtual size 40GB / actual size ~82KB (dynamically allocated, confirmed correct).
+Storage settings showed a single 40GB disk attached, virtual size 40GB / actual size \~82KB (dynamically allocated, confirmed correct).
 
----
+\---
 
 ### Locked out of own account - Num Lock off during password entry
 
@@ -40,7 +61,7 @@ Verified Num Lock state before retrying login. No password reset needed once Num
 **Verification:**
 Successful login as cdub.
 
----
+\---
 
 ### DHCP lease missing default gateway route
 
@@ -59,7 +80,7 @@ Manually added the route at runtime (`sudo ip route add default via 192.168.56.2
 **Verification:**
 `ip route` showed the default route persisting across reboots. `ping 8.8.8.8` succeeded.
 
----
+\---
 
 ### DHCP lease missing DNS server / hostname resolution failing
 
@@ -78,7 +99,7 @@ Manually set DNS at runtime (`resolvectl dns enp0s3 192.168.56.2`) to confirm th
 **Verification:**
 `resolvectl status` showed a persistent "Current DNS Server" entry. Hostname resolution and `curl` to external hosts succeeded after reboot.
 
----
+\---
 
 ### graylog01 blocked by pfSense implicit deny
 
@@ -97,7 +118,7 @@ Added a temporary broad "Any" allow rule for graylog01 (192.168.56.105) in Firew
 **Verification:**
 `ping 192.168.56.2` and `ping 8.8.8.8` both succeeded after the rule was added and applied.
 
----
+\---
 
 ### MongoDB 7.0 crashes on start - SIGILL / core-dump (AVX requirement)
 
@@ -116,7 +137,7 @@ Pivoted to MongoDB 4.4, the last major version released before the AVX requireme
 **Verification:**
 `grep avx /proc/cpuinfo` remained empty (confirming the underlying limitation), but MongoDB 4.4 does not require AVX and installed/started without issue afterward.
 
----
+\---
 
 ### MongoDB 4.4 dependency conflict - libssl1.1 unavailable
 
@@ -135,6 +156,7 @@ Manually downloaded and installed the `libssl1.1` .deb package directly from Ubu
 **Verification:**
 `sudo apt install -y mongodb-org` completed successfully. `sudo systemctl status mongod` showed `Active: active (running)` with no crash.
 
----
+\---
 
 <!-- Add entries above this line as you hit real issues during the build -->
+
